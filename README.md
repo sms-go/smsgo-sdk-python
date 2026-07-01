@@ -211,7 +211,7 @@ except SMSGoError as err:
 | Parâmetro  | Tipo    | Default                    | Descrição                      |
 | ---------- | ------- | -------------------------- | ------------------------------ |
 | `api_key`  | `str`   | —                          | **Obrigatório.** Sua SMSGo-key.|
-| `base_url` | `str`   | `https://api.smsgo.com.br` | Útil para local/staging.       |
+| `base_url` | `str`   | `https://api.smsgo.com.br` | Não precisa mexer; só se a SMSGo orientar. |
 | `timeout`  | `float` | `30.0`                     | Timeout das requisições (s).   |
 
 ### Métodos (cliente)
@@ -250,12 +250,6 @@ except SMSGoError as err:
 ### Módulo
 
 - `verify_webhook_signature(raw_body, signature_header, secret)` → `bool` — valida `X-SMSGo-Signature` em tempo constante.
-
-## Ambiente local
-
-```python
-smsgo = SMSGo(api_key="...", base_url="http://localhost:3333")
-```
 
 ## Exemplos
 
