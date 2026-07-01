@@ -30,8 +30,8 @@ dependencies = []
 
 [project.urls]
 Homepage = "https://smsgo.com.br"
-Repository = "https://github.com/SMSFy/smsgo-sdk-python"
-Issues = "https://github.com/SMSFy/smsgo-sdk-python/issues"
+Repository = "https://github.com/sms-go/smsgo-sdk-python"
+Issues = "https://github.com/sms-go/smsgo-sdk-python/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/smsgo"]

@@ -5,7 +5,7 @@ Guia de release do SDK Python. Registry: **PyPI** · pacote `smsgo`. Publicaçã
 ## Pré-requisitos (uma vez)
 
 1. Projeto `smsgo` no PyPI com um **Trusted Publisher** (ou "pending publisher" antes do 1º release) apontando para:
-   - Repositório: `SMSFy/smsgo-sdk-python`
+   - Repositório: `sms-go/smsgo-sdk-python`
    - Workflow: `publish.yml`
    - Environment: `pypi`
    - Guia oficial: https://docs.pypi.org/trusted-publishers/
