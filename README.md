@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/smsgo.svg)](https://pypi.org/project/smsgo/)
 [![Python](https://img.shields.io/pypi/pyversions/smsgo.svg)](https://pypi.org/project/smsgo/)
-[![CI](https://github.com/SMSFy/smsgo-python/actions/workflows/ci.yml/badge.svg)](https://github.com/SMSFy/smsgo-python/actions/workflows/ci.yml)
+[![CI](https://github.com/SMSFy/smsgo-sdk-python/actions/workflows/ci.yml/badge.svg)](https://github.com/SMSFy/smsgo-sdk-python/actions/workflows/ci.yml)
 [![license](https://img.shields.io/pypi/l/smsgo.svg)](./LICENSE)
 
 SDK oficial **Python** para a [SMSGo](https://smsgo.com.br) — a API de SMS simples para o Brasil. Envie **OTP/2FA, alertas transacionais e campanhas** com poucas linhas.
