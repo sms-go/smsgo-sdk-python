@@ -14,6 +14,7 @@ import hashlib
 import hmac
 import json
 import time
+from datetime import datetime, timezone
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -680,6 +681,7 @@ def verify_webhook_signature(
     raw_body: Union[str, bytes, None],
     signature_header: Optional[str],
     secret: str,
+    tolerance_seconds: Optional[int] = None,
 ) -> bool:
     """Valida a assinatura ``X-SMSGo-Signature`` de um webhook de saída.
 
@@ -690,10 +692,14 @@ def verify_webhook_signature(
         raw_body: corpo bruto exatamente como recebido (``str`` ou ``bytes``).
         signature_header: valor do cabeçalho ``X-SMSGo-Signature``.
         secret: segredo do webhook (``get_webhook().secret``).
+        tolerance_seconds: se informado, além da assinatura exige que o
+            ``sentAt`` do corpo esteja dentro desta janela (anti-replay). Sem
+            ele, o comportamento é idêntico ao anterior (só assinatura).
+            Deduplicar por ``id`` do corpo continua a cargo do receptor.
 
     Returns:
-        ``True`` se a assinatura confere; ``False`` caso contrário (inclui
-        ``None``/vazio). Nunca levanta exceção.
+        ``True`` se a assinatura confere (e o frescor, quando exigido);
+        ``False`` caso contrário (inclui ``None``/vazio). Nunca levanta exceção.
     """
     if not signature_header or not secret or raw_body is None:
         return False
@@ -704,7 +710,23 @@ def verify_webhook_signature(
     # exceção (compare_digest com dois str exige ASCII) — apenas retornar False.
     expected = ("sha256=" + digest).encode("ascii")
     provided = signature_header.encode("utf-8", "replace")
-    return hmac.compare_digest(expected, provided)
+    if not hmac.compare_digest(expected, provided):
+        return False
+
+    if tolerance_seconds is not None:
+        try:
+            sent_at = json.loads(body_bytes.decode("utf-8")).get("sentAt")
+            if not sent_at:
+                return False
+            # ISO-8601 com "Z" (UTC): fromisoformat só aceita offset em +00:00.
+            sent = datetime.fromisoformat(str(sent_at).replace("Z", "+00:00"))
+            now = datetime.now(timezone.utc)
+            if abs((now - sent).total_seconds()) > tolerance_seconds:
+                return False
+        except Exception:
+            return False
+
+    return True
 
 
 # -------------------------------------------------------------------------- #
