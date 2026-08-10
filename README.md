@@ -5,17 +5,15 @@
 [![CI](https://github.com/sms-go/smsgo-sdk-python/actions/workflows/ci.yml/badge.svg)](https://github.com/sms-go/smsgo-sdk-python/actions/workflows/ci.yml)
 [![license](https://img.shields.io/pypi/l/smsgo.svg)](./LICENSE)
 
-SDK oficial **Python** para a [SMSGo](https://smsgo.com.br) — a API de SMS simples para o Brasil. Envie **OTP/2FA, alertas transacionais e campanhas** com poucas linhas.
+> SDK oficial **Python** para a [SMSGo](https://smsgo.com.br) — a API de SMS simples para o Brasil. Envie **OTP/2FA, alertas transacionais e campanhas** com poucas linhas.
 
 - ⚡ **Integra em minutos** — autenticação cuidada pra você (sem ritual de token manual).
 - 💸 **Sem mensalidade** — créditos pré-pagos que não expiram, preço em real.
-- 🇧🇷 **Brasil-first** — entrega para todas as operadoras, LGPD nativo.
+- 🇧🇷 **Brasil-first** — entrega otimizada para Vivo, Claro, TIM, Oi e demais operadoras.
 - 🟢 **Zero dependências** — usa só a biblioteca padrão. Tipado (`py.typed`).
 - 🎁 **R$ 10 grátis** ao criar a conta — dá pra testar sem cartão.
 
 > Nova conta e chave em **[smsgo.com.br](https://smsgo.com.br)** → painel → **Minha conta → API**.
-
-Paridade total com o [SDK oficial Node.js](https://www.npmjs.com/package/@orynlabs/smsgo): mesmos métodos, mapeamentos de campo, autenticação e erros.
 
 ## Instalação
 
@@ -23,7 +21,7 @@ Paridade total com o [SDK oficial Node.js](https://www.npmjs.com/package/@orynla
 pip install smsgo
 ```
 
-Requer Python 3.8+.
+Requer Python **3.8+**.
 
 ## Começo rápido
 
@@ -41,22 +39,23 @@ result = smsgo.send(
 print(result.id, result.status)  # -> "a1b2c3...", "queued"
 ```
 
-Você passa só a `api_key`. O SDK troca a chave por um token Bearer (válido 48h), guarda em cache e renova sozinho quando expira ou retorna 401.
+Você passa só a `api_key`. O SDK troca a chave por um token Bearer (válido 48h), guarda em cache e renova sozinho quando expira ou a API retornar `401`.
 
 ## Enviar um OTP (2FA)
 
 ```python
-import random
-from smsgo import SMSGo, SMSGoError
+import secrets
 
-smsgo = SMSGo(api_key="...")
-code = f"{random.randint(0, 999999):06d}"  # 6 dígitos
+smsgo = SMSGo(api_key=os.environ["SMSGO_KEY"])
 
-try:
-    smsgo.send(phone="+5511999990000", message=f"Seu código SMSGo é {code}. Válido por 5 minutos.")
-    # guarde `code` com TTL (ex.: Redis) e compare na verificação
-except SMSGoError as err:
-    print(err.status, err.code, err.message)
+# Gere o código no seu backend e armazene com TTL (ex.: Redis)
+code = f"{secrets.randbelow(900000) + 100000:06d}"
+
+smsgo.send(
+    phone=user.phone,
+    message=f"Seu código SMSGo é {code}. Válido por 5 minutos.",
+)
+# guarde `code` e compare na verificação
 ```
 
 ## Envio em massa
@@ -75,7 +74,7 @@ smsgo.send_bulk(
 
 ```python
 page = smsgo.list(page=1)                 # Paginated(meta, data=[SendListItem, ...])
-detail = smsgo.get("a1b2c3-...")          # SendDetail com summary de acompanhamento
+detail = smsgo.get("a1b2c3-...")          # SendDetail com summary de entregas
 print(detail.summary.delivered, detail.summary.done)
 
 # Números de um envio, filtrando por bucket de status:
@@ -99,10 +98,10 @@ print(r.test)  # True
 
 ```python
 balance = smsgo.get_balance()
-print(balance.balance, balance.currency)          # 42.50 'BRL'
+print(balance.balance, balance.currency)  # 42.50 'BRL'
 print(balance.company["name"])
 
-for t in smsgo.get_sms_types():                   # catálogo (id vai em sms_type_id)
+for t in smsgo.get_sms_types():  # catálogo (id vai em sms_type_id)
     print(t.id, t.name, t.sale or t.price)
 ```
 
@@ -179,6 +178,8 @@ Toda resposta não-2xx vira um `SMSGoError` com `status` e um `code` estável:
 ```python
 from smsgo import SMSGo, SMSGoError
 
+smsgo = SMSGo(api_key=os.environ["SMSGO_KEY"])
+
 try:
     smsgo.send(phone="+5511999990000", message="Olá")
 except SMSGoError as err:
@@ -193,26 +194,28 @@ except SMSGoError as err:
         print(err.status, err.code, err.message)
 ```
 
-| `code`                  | HTTP | Significado                       |
-| ----------------------- | ---- | --------------------------------- |
-| `bad_request`           | 400  | Requisição malformada             |
-| `unauthorized`          | 401  | Chave/token inválido              |
-| `insufficient_balance`  | 402  | Saldo insuficiente                |
-| `provider_out_of_stock` | 409  | Estoque do provedor indisponível  |
-| `validation_error`      | 422  | Dados do request inválidos        |
-| `rate_limited`          | 429  | Limite de envios atingido         |
-| `payment_unavailable`   | 503  | Pagamento temporariamente fora    |
-| `network_error`         | 0    | Falha de rede/transporte          |
+| `code`                  | HTTP | Significado                      |
+| ----------------------- | ---- | -------------------------------- |
+| `bad_request`           | 400  | Requisição malformada            |
+| `unauthorized`          | 401  | Chave/token inválido             |
+| `insufficient_balance`  | 402  | Saldo insuficiente               |
+| `provider_out_of_stock` | 409  | Estoque do provedor indisponível |
+| `validation_error`      | 422  | Dados do request inválidos       |
+| `rate_limited`          | 429  | Limite de requisições atingido   |
+| `card_declined`         | 402  | Cartão recusado na compra        |
+| `card_required`         | 400  | Nenhum cartão apto à cobrança    |
+| `payment_unavailable`   | 503  | Pagamento temporariamente fora   |
+| `network_error`         | 0    | Falha de rede/transporte         |
 
 ## Referência
 
 ### `SMSGo(api_key, *, base_url=..., timeout=30.0)`
 
-| Parâmetro  | Tipo    | Default                    | Descrição                      |
-| ---------- | ------- | -------------------------- | ------------------------------ |
-| `api_key`  | `str`   | —                          | **Obrigatório.** Sua SMSGo-key.|
-| `base_url` | `str`   | `https://api.smsgo.com.br` | Não precisa mexer; só se a SMSGo orientar. |
-| `timeout`  | `float` | `30.0`                     | Timeout das requisições (s).   |
+| Parâmetro  | Tipo    | Default                    | Descrição                       |
+| ---------- | ------- | -------------------------- | ------------------------------- |
+| `api_key`  | `str`   | —                          | **Obrigatório.** Sua SMSGo-key. |
+| `base_url` | `str`   | `https://api.smsgo.com.br` | Só altere se a SMSGo orientar.  |
+| `timeout`  | `float` | `30.0`                     | Timeout das requisições (s).    |
 
 ### Métodos (cliente)
 
@@ -223,9 +226,8 @@ except SMSGoError as err:
 - `get_numbers(id, *, status=None, page=None)` → `Paginated[SendNumberItem]`
 - `get_sms_types()` → `list[SmsTypeItem]`
 - `get_balance()` → `Balance`
-- `get_auto_recharge()` → `AutoRechargeConfig`
-- `set_auto_recharge(*, enabled=None, threshold=None, plan_quantity=None, card_id=None, alert_enabled=None, alert_threshold=None)` → `AutoRechargeConfig`
-- `get_webhook()` / `set_webhook(*, url=None, rotate_secret=None)` → `WebhookConfig`
+- `get_auto_recharge()` / `set_auto_recharge(...)` → `AutoRechargeConfig`
+- `get_webhook()` / `set_webhook(...)` → `WebhookConfig`
 - `resolve_mode()` → `'live' | 'test'` · propriedade `mode` → `'live' | 'test' | None`
 
 > `sender` é mapeado para o campo `from` da API (palavra reservada em Python).
@@ -234,7 +236,7 @@ except SMSGoError as err:
 
 - `list(*, page, per_page=None, search=None, title=None)` → `Paginated`
 - `create(*, full_name, phone, email=None, lists=None)` → `str` (UUID)
-- `get(id)` → `ContactDetail` · `update(id, *, full_name, phone, email=None, lists=None)` → `str` · `delete(id)` → `dict`
+- `get(id)` → `ContactDetail` · `update(id, ...)` → `str` · `delete(id)` → `dict`
 
 ### `smsgo.lists`
 
@@ -267,7 +269,7 @@ SMSGO_WEBHOOK_SECRET=whsec_... python examples/receive_dlr_webhook.py
 
 ## Migrando da TotalVoice / Twilio?
 
-SMSGo foca em **DX simples e preço em real**. Sem cadastro de remetente pra começar, sem cobrança em dólar, créditos que não expiram. Há também o [SDK oficial Node.js](https://www.npmjs.com/package/@orynlabs/smsgo).
+SMSGo foca em **DX simples e preço em real**. Sem cadastro de remetente pra começar, sem cobrança em dólar, créditos que não expiram. Há também os [SDKs oficiais Node.js](https://www.npmjs.com/package/@orynlabs/smsgo), [Go](https://pkg.go.dev/github.com/sms-go/smsgo-sdk-go) e [PHP](https://packagist.org/packages/orynlabs/smsgo).
 
 ## Licença
 
