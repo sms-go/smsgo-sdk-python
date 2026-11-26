@@ -11,7 +11,7 @@
 - 💸 **Sem mensalidade** — créditos pré-pagos que não expiram, preço em real.
 - 🇧🇷 **Brasil-first** — entrega otimizada para Vivo, Claro, TIM, Oi e demais operadoras.
 - 🟢 **Zero dependências** — usa só a biblioteca padrão. Tipado (`py.typed`).
-- 🎁 **R$ 10 grátis** ao criar a conta — dá pra testar sem cartão.
+- 🎁 **10 SMS grátis** ao criar a conta — dá pra testar sem cartão.
 
 > Nova conta e chave em **[smsgo.com.br](https://smsgo.com.br)** → painel → **Minha conta → API**.
 

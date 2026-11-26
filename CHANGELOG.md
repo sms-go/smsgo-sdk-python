@@ -4,6 +4,13 @@ Todas as mudanças relevantes deste pacote são documentadas aqui.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/)
 e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.4.1] - 2026-11-26
+
+### Documentação
+
+- README: a conta nova recebe **10 SMS grátis** (a oferta mudou; o texto ainda
+  dizia "R$ 10 grátis").
+
 ## [0.3.0] - 2026-07-01
 
 ### Adicionado
